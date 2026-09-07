@@ -1,0 +1,23 @@
+{
+  "name": "shanxiang-astro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "postbuild": "pagefind --site dist",
+    "preview": "astro preview",
+    "new:post": "node scripts/new-post.mjs"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.2",
+    "@astrojs/vue": "^5.1.1",
+    "astro": "^5.13.2",
+    "@tailwindcss/vite": "^4.1.12",
+    "tailwindcss": "^4.1.12",
+    "vue": "^3.5.20",
+    "@vueuse/motion": "^3.0.3",
+    "pagefind": "^1.4.0"
+  }
+}

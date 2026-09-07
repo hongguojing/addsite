@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { inferTrack } from "../../lib/taxonomy";
+
+const posts = (await getCollection("posts", ({ data }) => !data.draft))
+  .filter((post) => inferTrack(post) === "assessment")
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="评估与诊断 | ADHD 中文知识库">
+  <section class="hero-card">
+    <p class="text-xs tracking-[0.2em] text-[#95aad0]">SECTION</p>
+    <h1 class="hero-title mt-2">评估与诊断</h1>
+    <p class="hero-lead">聚焦筛查工具、就医流程、诊断标准与鉴别要点，帮助你更稳地走完评估路径。</p>
+  </section>
+
+  <h2 class="section-title">相关文章</h2>
+  <div class="article-grid">
+    {posts.map((post, index) => <PostCard post={post} delay={0.05 * index} />)}
+  </div>
+</BaseLayout>

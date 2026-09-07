@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { inferTrack } from "../../lib/taxonomy";
+
+const posts = (await getCollection("posts", ({ data }) => !data.draft))
+  .filter((post) => inferTrack(post) === "understand")
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="认识 ADHD | ADHD 中文知识库">
+  <section class="hero-card">
+    <p class="text-xs tracking-[0.2em] text-[#95aad0]">SECTION</p>
+    <h1 class="hero-title mt-2">认识 ADHD</h1>
+    <p class="hero-lead">以神经发展与执行功能为主线，整理基础概念、常见症状、常见误区和成年阶段特征。</p>
+  </section>
+
+  <h2 class="section-title">相关文章</h2>
+  <div class="article-grid">
+    {posts.map((post, index) => <PostCard post={post} delay={0.05 * index} />)}
+  </div>
+</BaseLayout>

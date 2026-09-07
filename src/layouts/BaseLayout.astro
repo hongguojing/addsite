@@ -1,0 +1,86 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "ADHD 中文知识库：基于科学，面向真实生活" } = Astro.props;
+const pathname = Astro.url.pathname;
+const isActive = (target: string) => pathname === target || pathname.startsWith(`${target}/`);
+
+const sideNav = [
+  { href: "/", label: "首页" },
+  { href: "/science", label: "认识 ADHD" },
+  { href: "/practice", label: "评估与诊断" },
+  { href: "/treatment", label: "治疗" },
+  { href: "/life", label: "生活" },
+];
+---
+
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <div class="site-shell">
+      <aside class="site-sidebar">
+        <a href="/" class="brand-block" aria-label="ADHD 中文知识库首页">
+          <span class="brand-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" class="h-6 w-6" fill="none">
+              <path d="M20 44c3-10 8-18 18-25" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              <path d="M45 17c2 5 2 10-1 14-4 5-10 9-20 14" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+              <path d="M22 20c6-7 16-8 23-2 7 6 8 16 2 23" stroke="currentColor" stroke-width="3" stroke-linecap="round" />
+            </svg>
+          </span>
+          <div>
+            <p class="brand-title">ADHD 中文知识库</p>
+            <p class="brand-subtitle">基于科学 · 面向真实生活</p>
+          </div>
+        </a>
+
+        <nav class="side-nav" aria-label="主导航">
+          {sideNav.map((item) => (
+            <a href={item.href} class={`side-link ${isActive(item.href) ? "side-link-active" : ""}`}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <p class="side-quote">这里不是告诉你\n“如何变优秀”的地方，\n而是帮助你理解自己。</p>
+      </aside>
+
+      <div class="site-main">
+        <header class="top-toolbar">
+          <form class="search-shell" action="/search/" method="get">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
+              <path d="M20 20l-3.6-3.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+            </svg>
+            <input id="siteSearch" type="text" name="q" placeholder="搜索文章、关键词、问题..." />
+          </form>
+          <div class="toolbar-actions" aria-hidden="true">
+            <span>☼</span>
+            <span>◐</span>
+          </div>
+        </header>
+
+        <main class="main-content">
+          <slot />
+        </main>
+
+        <footer class="site-footer">
+          <p>© 2026 ADHD 中文知识库</p>
+        </footer>
+      </div>
+    </div>
+  </body>
+</html>

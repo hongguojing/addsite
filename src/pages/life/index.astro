@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { inferTrack } from "../../lib/taxonomy";
+
+const posts = (await getCollection("posts", ({ data }) => !data.draft))
+  .filter((post) => inferTrack(post) === "life")
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+
+<BaseLayout title="生活 | ADHD 中文知识库">
+  <section class="hero-card">
+    <p class="text-xs tracking-[0.2em] text-[#95aad0]">SECTION</p>
+    <h1 class="hero-title mt-2">生活</h1>
+    <p class="hero-lead">记录真实处境中的执行、沟通、情绪和节律管理，关注能立刻上手的小策略。</p>
+  </section>
+
+  <h2 class="section-title">相关文章</h2>
+  <div class="article-grid">
+    {posts.map((post, index) => <PostCard post={post} delay={0.05 * index} />)}
+  </div>
+</BaseLayout>

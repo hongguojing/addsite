@@ -1,0 +1,157 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getTrackMeta, inferTrack } from "../../lib/taxonomy";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { slug: post.slug } }));
+}
+
+const { slug } = Astro.params;
+if (!slug) {
+  throw new Error("缺少 slug 参数");
+}
+
+const post = await getEntry("posts", slug);
+if (!post) {
+  throw new Error(`文章不存在: ${slug}`);
+}
+
+const { Content, headings } = await post.render();
+const highlightText = post.data.keyPoint ?? post.data.excerpt;
+const tocItems = headings.filter((item) => item.depth === 2 || item.depth === 3);
+const track = inferTrack(post);
+const sectionLabel = getTrackMeta(track).label;
+const sectionHref = getTrackMeta(track).href;
+const readMinutes = post.data.readMinutes ?? 8;
+const views = post.data.views ?? "1.0k";
+
+const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
+  .filter((item) => item.slug !== post.slug && inferTrack(item) === track)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 4);
+---
+
+<BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
+  <nav class="mb-3 text-sm text-[#9ab0d6]">
+    <a href="/" class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
+  </nav>
+
+  <div class="post-reading-layout">
+    <article class="reading-article">
+      <p class="reading-post-meta">{post.data.date.toISOString().slice(0, 10)} · {sectionLabel}</p>
+      <h1 class="reading-post-title">{post.data.title}</h1>
+      <p class="reading-post-lead">{post.data.excerpt}</p>
+
+      <div class="reading-meta-row">
+        <span class="reading-meta-pill">{readMinutes} 分钟阅读</span>
+        <span class="reading-meta-pill">{views} 阅读</span>
+        {post.data.tags.slice(0, 4).map((tag) => <span class="reading-meta-pill">#{tag}</span>)}
+      </div>
+
+      {
+        post.data.cover ? (
+          <figure class="reading-cover-wrap">
+            <img src={post.data.cover.src} alt={`${post.data.title} 封面`} class="reading-cover" loading="lazy" />
+          </figure>
+        ) : null
+      }
+
+      <div class="reading-keypoint">
+        <p class="reading-keypoint-text">一句话结论：{highlightText}</p>
+      </div>
+
+      <div class="prose article-prose mt-8 max-w-none">
+        <Content />
+      </div>
+    </article>
+
+    <aside class="reading-sidecar" aria-label="阅读辅助面板">
+      <section class="reading-toc-card" aria-label="文章目录">
+        <div class="reading-toc-head">
+          <span>目录</span>
+          <span>{tocItems.length}</span>
+        </div>
+
+        {
+          tocItems.length > 0 ? (
+            <ol id="readingTocList" class="reading-toc-list">
+              {tocItems.map((item) => (
+                <li class={`toc-depth-${item.depth}`}>
+                  <a href={`#${item.slug}`} data-toc-link>
+                    {item.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p class="reading-toc-empty">当前文章没有可显示的标题目录。</p>
+          )
+        }
+      </section>
+
+      <section class="reading-toc-card mt-3" aria-label="相关推荐">
+        <div class="reading-toc-head">
+          <span>相关推荐</span>
+          <a href={sectionHref} class="text-xs text-[#a9bfdf] hover:text-[#e7f0ff]">更多</a>
+        </div>
+
+        {
+          relatedPosts.length > 0 ? (
+            <div class="mt-2 grid gap-2">
+              {relatedPosts.map((item) => (
+                <a href={`/posts/${item.slug}/`} class="related-link">
+                  <p class="related-title">{item.data.title}</p>
+                  <p class="related-meta">{item.data.readMinutes ?? 8} 分钟 · {item.data.views ?? "1.0k"} 阅读</p>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p class="reading-toc-empty mt-2">暂无更多同主题文章。</p>
+          )
+        }
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const tocLinks = Array.from(document.querySelectorAll("[data-toc-link]"));
+    const observedHeadings = tocLinks
+      .map((link) => {
+        const id = link.getAttribute("href")?.replace("#", "");
+        if (!id) return null;
+        return document.getElementById(id);
+      })
+      .filter(Boolean);
+
+    const activateTocLink = (id) => {
+      tocLinks.forEach((link) => {
+        const target = link.getAttribute("href");
+        const isActive = target === `#${id}`;
+        link.classList.toggle("is-active", isActive);
+      });
+    };
+
+    if (observedHeadings.length > 0) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+          if (visible.length > 0) {
+            activateTocLink(visible[0].target.id);
+          }
+        },
+        {
+          rootMargin: "-24% 0px -62% 0px",
+          threshold: [0.1, 0.6, 1],
+        },
+      );
+
+      observedHeadings.forEach((heading) => io.observe(heading));
+      activateTocLink(observedHeadings[0].id);
+    }
+  </script>
+</BaseLayout>

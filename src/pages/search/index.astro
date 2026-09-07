@@ -1,0 +1,121 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="搜索 | ADHD 中文知识库">
+  <section class="hero-card">
+    <p class="text-xs tracking-[0.2em] text-[#95aad0]">SEARCH</p>
+    <h1 class="hero-title mt-2">内容检索</h1>
+    <p class="hero-lead">输入关键词，快速找到相关文章段落与主题。</p>
+  </section>
+
+  <section class="search-panel mt-4">
+    <form id="searchForm" class="search-page-form" action="/search/" method="get">
+      <input id="searchInput" name="q" type="search" placeholder="例如：执行功能、诊断、药物、副作用" />
+      <button type="submit">搜索</button>
+    </form>
+
+    <p id="searchState" class="search-state">正在等待输入...</p>
+    <div id="searchResults" class="search-results"></div>
+  </section>
+
+  <script>
+    const stateEl = document.querySelector("#searchState");
+    const resultsEl = document.querySelector("#searchResults");
+    const inputEl = document.querySelector("#searchInput");
+    const formEl = document.querySelector("#searchForm");
+
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("q")?.trim() ?? "";
+
+    if (inputEl && q) {
+      inputEl.value = q;
+    }
+
+    const setState = (text) => {
+      if (stateEl) stateEl.textContent = text;
+    };
+
+    const escapeHtml = (value) =>
+      value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const renderResults = (items) => {
+      if (!resultsEl) return;
+      if (items.length === 0) {
+        resultsEl.innerHTML = "";
+        setState("没有找到匹配内容。可以换个关键词试试。");
+        return;
+      }
+
+      setState(`找到 ${items.length} 条结果`);
+      resultsEl.innerHTML = items
+        .map(
+          (item) => `
+            <a class="result-card" href="${item.url}">
+              <h3>${escapeHtml(item.meta.title || "未命名文章")}</h3>
+              <p>${escapeHtml(item.excerpt || "")}</p>
+            </a>
+          `,
+        )
+        .join("");
+    };
+
+    const ensurePagefind = async () => {
+      if (window.pagefind) return window.pagefind;
+
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "/pagefind/pagefind.js";
+        script.async = true;
+        script.onload = () => resolve(true);
+        script.onerror = () => reject(new Error("load failed"));
+        document.head.appendChild(script);
+      });
+
+      return window.pagefind;
+    };
+
+    const runSearch = async (keyword) => {
+      if (!keyword) {
+        setState("请输入关键词开始搜索。");
+        if (resultsEl) resultsEl.innerHTML = "";
+        return;
+      }
+
+      setState("正在检索，请稍候...");
+
+      try {
+        const pagefind = await ensurePagefind();
+        if (!pagefind) throw new Error("no pagefind");
+        const result = await pagefind.search(keyword, { excerptLength: 24 });
+        const data = await Promise.all(result.results.slice(0, 12).map((item) => item.data()));
+        renderResults(data);
+      } catch (error) {
+        setState("搜索索引尚未准备好。请先执行 npm run build。");
+        if (resultsEl) resultsEl.innerHTML = "";
+      }
+    };
+
+    if (q) {
+      runSearch(q);
+    }
+
+    formEl?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const keyword = inputEl?.value.trim() ?? "";
+      const next = new URL(window.location.href);
+      if (keyword) {
+        next.searchParams.set("q", keyword);
+      } else {
+        next.searchParams.delete("q");
+      }
+      history.replaceState(null, "", next.toString());
+      runSearch(keyword);
+    });
+  </script>
+</BaseLayout>
