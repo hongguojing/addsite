@@ -10,6 +10,7 @@ interface Props {
 
 const { post, delay = 0 } = Astro.props;
 const dateText = post.data.date.toISOString().slice(0, 10);
+const base = import.meta.env.BASE_URL;
 const sectionBadgeClassMap = {
   understand: "border-[#8f92d7] bg-[#4b4ca0]/35 text-[#d7d8ff]",
   assessment: "border-[#70a8d5] bg-[#23618f]/32 text-[#cde9ff]",
@@ -25,7 +26,7 @@ const views = post.data.views ?? "1.2k";
 ---
 
 <MotionReveal client:visible delay={delay}>
-  <a href={`/posts/${post.slug}/`} class="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9a0ff]/80">
+  <a href={`${base}posts/${post.slug}/`} class="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9a0ff]/80">
     <article class="glass-card flex h-full gap-4 overflow-hidden rounded-2xl p-4 transition duration-200 group-hover:-translate-y-1 group-hover:border-[#b39dff]/45">
       <div class="w-28 shrink-0 overflow-hidden rounded-xl border border-[#94a8cf]/28 bg-[linear-gradient(135deg,rgba(151,119,240,0.34),rgba(90,176,255,0.18))] md:w-40">
         {

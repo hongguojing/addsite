@@ -5,7 +5,8 @@ import vue from "@astrojs/vue";
 
 export default defineConfig({
   output: "static",
-  site: "https://shanxiang.local",
+  site: "https://hongguojing.github.io",
+  base: "/addsite",
   integrations: [
     mdx(),
     vue({ appEntrypoint: "/src/vue/motion-app.ts" }),

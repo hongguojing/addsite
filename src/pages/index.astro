@@ -7,6 +7,7 @@ import MotionReveal from "../components/motion/MotionReveal.vue";
 const allPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 const latest = allPosts.slice(0, 5);
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="ADHD 中文知识库 | 首页">
@@ -27,25 +28,25 @@ const latest = allPosts.slice(0, 5);
 
   <section class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
     <MotionReveal client:visible delay={0.05}>
-      <a href="/science" class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
+      <a href={`${base}science`} class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
         <p class="text-xs tracking-[0.14em] text-[#9eb3d6]">认识 ADHD</p>
         <h2 class="mt-2 text-xl font-bold text-[#edf4ff]">机制、症状与误区</h2>
       </a>
     </MotionReveal>
     <MotionReveal client:visible delay={0.1}>
-      <a href="/practice" class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
+      <a href={`${base}practice`} class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
         <p class="text-xs tracking-[0.14em] text-[#9eb3d6]">评估与诊断</p>
         <h2 class="mt-2 text-xl font-bold text-[#edf4ff]">筛查、就医与报告解读</h2>
       </a>
     </MotionReveal>
     <MotionReveal client:visible delay={0.15}>
-      <a href="/treatment" class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
+      <a href={`${base}treatment`} class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
         <p class="text-xs tracking-[0.14em] text-[#9eb3d6]">治疗</p>
         <h2 class="mt-2 text-xl font-bold text-[#edf4ff]">药物、干预与日常策略</h2>
       </a>
     </MotionReveal>
     <MotionReveal client:visible delay={0.2}>
-      <a href="/life" class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
+      <a href={`${base}life`} class="glass-card block rounded-2xl p-5 transition duration-200 hover:-translate-y-1 hover:border-[#b89fff]/40">
         <p class="text-xs tracking-[0.14em] text-[#9eb3d6]">生活</p>
         <h2 class="mt-2 text-xl font-bold text-[#edf4ff]">节奏、沟通与执行支持</h2>
       </a>
@@ -55,7 +56,7 @@ const latest = allPosts.slice(0, 5);
   <section class="mt-5">
     <div class="mb-3 flex items-center justify-between">
       <h2 class="section-title m-0">最新文章</h2>
-      <a href="/posts/" class="text-sm text-[#b6ccf0] hover:text-[#deebff]">全部文章 →</a>
+      <a href={`${base}posts/`} class="text-sm text-[#b6ccf0] hover:text-[#deebff]">全部文章 →</a>
     </div>
 
     <div class="article-grid">

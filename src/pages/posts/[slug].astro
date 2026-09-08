@@ -8,6 +8,7 @@ export async function getStaticPaths() {
   return posts.map((post) => ({ params: { slug: post.slug } }));
 }
 
+const base = import.meta.env.BASE_URL;
 const { slug } = Astro.params;
 if (!slug) {
   throw new Error("缺少 slug 参数");
@@ -23,7 +24,7 @@ const highlightText = post.data.keyPoint ?? post.data.excerpt;
 const tocItems = headings.filter((item) => item.depth === 2 || item.depth === 3);
 const track = inferTrack(post);
 const sectionLabel = getTrackMeta(track).label;
-const sectionHref = getTrackMeta(track).href;
+const sectionHref = `${base}${getTrackMeta(track).href.replace(/^\//, "")}`;
 const readMinutes = post.data.readMinutes ?? 8;
 const views = post.data.views ?? "1.0k";
 
@@ -35,7 +36,7 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
 
 <BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
   <nav class="mb-3 text-sm text-[#9ab0d6]">
-    <a href="/" class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
+    <a href={base} class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
   </nav>
 
   <div class="post-reading-layout">
@@ -101,7 +102,7 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
           relatedPosts.length > 0 ? (
             <div class="mt-2 grid gap-2">
               {relatedPosts.map((item) => (
-                <a href={`/posts/${item.slug}/`} class="related-link">
+                <a href={`${base}posts/${item.slug}/`} class="related-link">
                   <p class="related-title">{item.data.title}</p>
                   <p class="related-meta">{item.data.readMinutes ?? 8} 分钟 · {item.data.views ?? "1.0k"} 阅读</p>
                 </a>
