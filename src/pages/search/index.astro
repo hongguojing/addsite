@@ -1,5 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL;
 ---
 
 <BaseLayout title="搜索 | ADHD 中文知识库">
@@ -10,7 +12,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
   </section>
 
   <section class="search-panel mt-4">
-    <form id="searchForm" class="search-page-form" action={`${import.meta.env.BASE_URL}search/`} method="get">
+    <form id="searchForm" class="search-page-form" action={`${base}/search/`} method="get">
       <input id="searchInput" name="q" type="search" placeholder="例如：执行功能、诊断、药物、副作用" />
       <button type="submit">搜索</button>
     </form>
@@ -70,7 +72,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 
       await new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = `${import.meta.env.BASE_URL}pagefind/pagefind.js`;
+        script.src = `${base}/pagefind/pagefind.js`;
         script.async = true;
         script.onload = () => resolve(true);
         script.onerror = () => reject(new Error("load failed"));

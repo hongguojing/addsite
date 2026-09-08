@@ -7,16 +7,16 @@ interface Props {
 }
 
 const { title, description = "ADHD 中文知识库：基于科学，面向真实生活" } = Astro.props;
-const pathname = Astro.url.pathname;
 const base = import.meta.env.BASE_URL;
+const pathname = Astro.url.pathname;
 const isActive = (target: string) => pathname === target || pathname.startsWith(`${target}/`);
 
 const sideNav = [
   { href: base, label: "首页" },
-  { href: `${base}science/`, label: "认识 ADHD" },
-  { href: `${base}practice/`, label: "评估与诊断" },
-  { href: `${base}treatment/`, label: "治疗" },
-  { href: `${base}life/`, label: "生活" },
+  { href: `${base}/science/`, label: "认识 ADHD" },
+  { href: `${base}/practice/`, label: "评估与诊断" },
+  { href: `${base}/treatment/`, label: "治疗" },
+  { href: `${base}/life/`, label: "生活" },
 ];
 ---
 
@@ -61,7 +61,7 @@ const sideNav = [
 
       <div class="site-main">
         <header class="top-toolbar">
-          <form class="search-shell" action={`${base}search/`} method="get">
+          <form class="search-shell" action={`${base}/search/`} method="get">
             <svg viewBox="0 0 24 24" aria-hidden="true">
               <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.6"></circle>
               <path d="M20 20l-3.6-3.6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>

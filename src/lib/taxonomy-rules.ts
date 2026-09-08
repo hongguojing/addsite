@@ -1,12 +1,10 @@
 import type { TrackKey } from "./taxonomy";
 
-const base = import.meta.env.BASE_URL;
-
 export const trackMeta: Record<TrackKey, { label: string; href: string }> = {
-  understand: { label: "认识 ADHD", href: `${base}science/` },
-  assessment: { label: "评估与诊断", href: `${base}practice/` },
-  treatment: { label: "治疗", href: `${base}treatment/` },
-  life: { label: "生活", href: `${base}life/` },
+  understand: { label: "认识 ADHD", href: "/science" },
+  assessment: { label: "评估与诊断", href: "/practice" },
+  treatment: { label: "治疗", href: "/treatment" },
+  life: { label: "生活", href: "/life" },
 };
 
 export const keywordMap: Record<TrackKey, string[]> = {
