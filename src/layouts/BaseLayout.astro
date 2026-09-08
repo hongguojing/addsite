@@ -7,16 +7,16 @@ interface Props {
 }
 
 const { title, description = "ADHD 中文知识库：基于科学，面向真实生活" } = Astro.props;
-const base = import.meta.env.BASE_URL;
 const pathname = Astro.url.pathname;
+const base = import.meta.env.BASE_URL;
 const isActive = (target: string) => pathname === target || pathname.startsWith(`${target}/`);
 
 const sideNav = [
   { href: base, label: "首页" },
-  { href: `${base}science`, label: "认识 ADHD" },
-  { href: `${base}practice`, label: "评估与诊断" },
-  { href: `${base}treatment`, label: "治疗" },
-  { href: `${base}life`, label: "生活" },
+  { href: `${base}science/`, label: "认识 ADHD" },
+  { href: `${base}practice/`, label: "评估与诊断" },
+  { href: `${base}treatment/`, label: "治疗" },
+  { href: `${base}life/`, label: "生活" },
 ];
 ---
 

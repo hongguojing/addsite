@@ -1,6 +1,8 @@
 import type { CollectionEntry } from "astro:content";
 import { keywordMap, trackMeta, trackPriority } from "./taxonomy-rules";
 
+const base = import.meta.env.BASE_URL;
+
 export type TrackKey = "understand" | "assessment" | "treatment" | "life";
 
 function normalize(input: string): string {

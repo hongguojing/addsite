@@ -24,7 +24,7 @@ const highlightText = post.data.keyPoint ?? post.data.excerpt;
 const tocItems = headings.filter((item) => item.depth === 2 || item.depth === 3);
 const track = inferTrack(post);
 const sectionLabel = getTrackMeta(track).label;
-const sectionHref = `${base}${getTrackMeta(track).href.replace(/^\//, "")}`;
+const sectionHref = getTrackMeta(track).href;
 const readMinutes = post.data.readMinutes ?? 8;
 const views = post.data.views ?? "1.0k";
 

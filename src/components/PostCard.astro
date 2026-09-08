@@ -10,7 +10,6 @@ interface Props {
 
 const { post, delay = 0 } = Astro.props;
 const dateText = post.data.date.toISOString().slice(0, 10);
-const base = import.meta.env.BASE_URL;
 const sectionBadgeClassMap = {
   understand: "border-[#8f92d7] bg-[#4b4ca0]/35 text-[#d7d8ff]",
   assessment: "border-[#70a8d5] bg-[#23618f]/32 text-[#cde9ff]",
@@ -23,6 +22,7 @@ const sectionLabel = getTrackMeta(track).label;
 const sectionBadgeClass = sectionBadgeClassMap[track];
 const readMinutes = post.data.readMinutes ?? 8;
 const views = post.data.views ?? "1.2k";
+const base = import.meta.env.BASE_URL;
 ---
 
 <MotionReveal client:visible delay={delay}>
