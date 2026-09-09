@@ -5,6 +5,7 @@ section: science
 track: life
 excerpt: ADHD真正消耗人的，往往不是能力不足，而是不断用别人的节奏衡量自己的生活。
 keyPoint: 稳定不是永远高效，而是在波动时知道如何回到轨道。
+cover: ./jiezou.png
 tags:
   - 反思
   - 成长

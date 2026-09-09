@@ -5,6 +5,7 @@ section: science
 track: life
 excerpt: 很多广为流传的自律建议，并不是错误，而是默认了一套并不属于 ADHD 的大脑机制。
 keyPoint: 方法没有绝对优劣，适配你的认知系统才是关键。
+cover: ./jianyi.png
 tags:
   - ADHD
   - 执行功能

@@ -7,6 +7,7 @@ excerpt: ADHD的治疗并不只有药物一种选择。药物主要改善注意�
 keyPoint: ADHD治疗不是寻找一种万能疗法，而是根据自己的核心症状和生活困难，把不同方法组合成一套真正能够长期运行的治疗系统。
 readMinutes: 8
 views: "0"
+cover: ./zhiliao.png
 tags:
   - 治疗
   - 成人ADHD

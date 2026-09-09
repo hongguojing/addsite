@@ -5,6 +5,7 @@ section: practice
 track: life
 excerpt: 理解 ADHD，不是降低对 ADHD 的要求，而是用更符合 ADHD 大脑特点的方式，让责任真正能够被执行。
 keyPoint: ADHD并不只是注意力不集中，它还可能影响工作记忆、冲动控制、情绪调节和沟通。理解这些机制，可以帮助我们减少误解，建立更有效的相处方式。
+cover: ./goutong.png
 tags:
   -  ADHD沟通
   -  亲密关系

@@ -7,6 +7,7 @@ excerpt: ADHD真正需要的不是更狠的自律，而是一套能在好状态�
 keyPoint: 真正让人走得远的，从来不是爆发力，而是能够反复开始。
 readMinutes: 9
 views: 1.2k
+cover: ./jiezou2.png
 tags:
   - ADHD
   - 执行功能

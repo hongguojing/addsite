@@ -11,6 +11,7 @@ interface Props {
 const { post, delay = 0 } = Astro.props;
 const dateText = post.data.date.toISOString().slice(0, 10);
 const base = import.meta.env.BASE_URL;
+
 const sectionBadgeClassMap = {
   understand: "border-[#8f92d7] bg-[#4b4ca0]/35 text-[#d7d8ff]",
   assessment: "border-[#70a8d5] bg-[#23618f]/32 text-[#cde9ff]",
@@ -21,36 +22,66 @@ const sectionBadgeClassMap = {
 const track = inferTrack(post);
 const sectionLabel = getTrackMeta(track).label;
 const sectionBadgeClass = sectionBadgeClassMap[track];
+
 const readMinutes = post.data.readMinutes ?? 8;
 const views = post.data.views ?? "1.2k";
 ---
 
 <MotionReveal client:visible delay={delay}>
-  <a href={`${base}/posts/${post.slug}/`} class="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9a0ff]/80">
-    <article class="glass-card flex h-full gap-4 overflow-hidden rounded-2xl p-4 transition duration-200 group-hover:-translate-y-1 group-hover:border-[#b39dff]/45">
-      <div class="w-28 shrink-0 overflow-hidden rounded-xl border border-[#94a8cf]/28 bg-[linear-gradient(135deg,rgba(151,119,240,0.34),rgba(90,176,255,0.18))] md:w-40">
-        {
-          post.data.cover ? (
-            <img src={post.data.cover.src} alt={`${post.data.title} 封面`} class="h-full w-full object-cover" loading="lazy" />
-          ) : (
-            <div class="flex h-full min-h-24 items-end p-3 text-xs text-[#d5e1ff]">{sectionLabel}</div>
-          )
-        }
+  <a
+    href={`${base}/posts/${post.slug}/`}
+    class="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9a0ff]/80"
+  >
+    <article
+      class="glass-card flex h-full gap-4 overflow-hidden rounded-2xl p-4 transition duration-200 group-hover:-translate-y-1 group-hover:border-[#b39dff]/45"
+    >
+      <!-- 左侧封面：与文字等高 -->
+      <div class="w-36 md:w-52 shrink-0 overflow-hidden rounded-xl">
+        {post.data.cover ? (
+          <img
+            src={post.data.cover.src}
+            alt={`${post.data.title} 封面`}
+            class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full items-end bg-[#1a2740] p-3 text-xs text-[#d5e1ff]">
+            {sectionLabel}
+          </div>
+        )}
       </div>
 
+      <!-- 右侧内容 -->
       <div class="min-w-0 flex-1">
         <div class="flex items-center justify-between gap-3">
-          <span class={`rounded-full border px-2 py-1 text-xs font-semibold tracking-[0.08em] ${sectionBadgeClass}`}>{sectionLabel}</span>
-          <p class="text-xs tracking-[0.06em] text-[#8ea7d1]">{dateText}</p>
+          <span
+            class={`rounded-full border px-2 py-1 text-xs font-semibold tracking-[0.08em] ${sectionBadgeClass}`}
+          >
+            {sectionLabel}
+          </span>
+
+          <p class="text-xs tracking-[0.06em] text-[#8ea7d1]">
+            {dateText}
+          </p>
         </div>
 
-        <h3 class="mt-2 text-xl font-bold leading-snug text-[#eef4ff]">{post.data.title}</h3>
-        <p class="mt-1 text-sm leading-relaxed text-[#acc0e2]">{post.data.excerpt}</p>
+        <h3 class="mt-2 text-xl font-bold leading-snug text-[#eef4ff]">
+          {post.data.title}
+        </h3>
 
-        <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-[#9fb5d8]">
+        <p class="mt-2 text-sm leading-relaxed text-[#acc0e2] line-clamp-3">
+          {post.data.excerpt}
+        </p>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-[#9fb5d8]">
           <span>{readMinutes} 分钟</span>
           <span>{views} 阅读</span>
-          {post.data.tags.slice(0, 2).map((tag) => <span class="rounded-full border border-[#95a8cf]/28 px-2 py-0.5">#{tag}</span>)}
+
+          {post.data.tags.slice(0, 2).map((tag) => (
+            <span class="rounded-full border border-[#95a8cf]/28 px-2 py-0.5">
+              #{tag}
+            </span>
+          ))}
         </div>
       </div>
     </article>
