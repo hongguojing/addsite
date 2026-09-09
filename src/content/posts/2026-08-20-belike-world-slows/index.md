@@ -5,6 +5,7 @@ section: science
 track: life
 excerpt: 真正的改变不总是更强，而是更了解自己在不同状态下如何推进。
 keyPoint: 识别能量波动并按状态安排任务，比硬扛更可持续。
+cover: ./lijie.png
 tags:
   - 学习笔记
   - 节奏
