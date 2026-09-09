@@ -1,13 +1,15 @@
 ---
-title: 职场人士的“时间管理”实操指南
+title: 把时间放在眼前：ADHD温柔管理指南
 date: 2026-08-25
 section: practice
 track: life
 excerpt: 时间管理的难点不是懒惰，而是启动与持续注意力波动；先拆解任务，再进入可执行节奏。
 keyPoint: 对 ADHD 而言，先把任务拆到可启动的最小动作，比追求完美计划更有效。
+cover: ./wenrou.png
 tags:
   - 时间管理
   - 实操
+  - 职场管理
 draft: false
 ---
 

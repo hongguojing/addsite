@@ -5,6 +5,7 @@ section: science
 track: understand
 excerpt: 纠正“懒惰论”“管教论”“成年后自然消失论”，帮助建立更准确的认知。
 keyPoint: 把 ADHD 视为神经发育差异而非态度问题，是减少羞耻感和提升支持效果的前提。
+cover: ./wujie.png
 tags:
   - 误区
   - 科普

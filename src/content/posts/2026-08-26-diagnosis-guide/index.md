@@ -5,6 +5,7 @@ section: science
 track: assessment
 excerpt: 评估重点是长期、跨场景和功能受损，而不是某一次表现好坏。
 keyPoint: 科学评估关注长期与跨场景功能影响，而不是单次表现是否专注。
+cover: ./ifadd.png
 tags:
   - 诊断
   - 评估

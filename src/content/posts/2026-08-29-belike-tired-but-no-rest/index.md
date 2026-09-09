@@ -5,9 +5,10 @@ section: science
 track: life
 excerpt: 疲惫并不总是体力问题，很多时候是心理持续高转速却缺少安全着陆点。
 keyPoint: 休息前先做落地动作，能帮助神经系统从高速运转切换到恢复状态。
+cover: ./lei.png
 tags:
-  - 学习笔记
-  - 反思
+  - 疲劳
+  - 休息
 draft: false
 ---
 
