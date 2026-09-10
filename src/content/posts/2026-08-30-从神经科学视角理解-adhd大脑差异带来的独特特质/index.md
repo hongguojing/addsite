@@ -5,6 +5,7 @@ section: science
 track: understand
 excerpt: ADHD 不是“注意力缺失”或“意志力不足”，而是多巴胺调节与前额叶功能差异带来的神经发育特质。
 keyPoint: 理解 ADHD 的神经机制后，关键不再是责备自己，而是通过外部结构设计可执行支持。
+cover: ./tuoyan .png
 tags:
   - 不是懒
   - 注意力太少
