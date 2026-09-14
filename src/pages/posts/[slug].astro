@@ -1,7 +1,6 @@
 ---
 import { getCollection, getEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import ShareButtons from "../../components/ShareButtons.astro";
 import { getTrackMeta, inferTrack } from "../../lib/taxonomy";
 
 export async function getStaticPaths() {
@@ -28,8 +27,6 @@ const sectionLabel = getTrackMeta(track).label;
 const sectionHref = `${base}${getTrackMeta(track).href.replace(/^\//, "")}`;
 const readMinutes = post.data.readMinutes ?? 8;
 const views = post.data.views ?? "1.0k";
-const shareUrl = Astro.url.href;
-const shareDescription = post.data.keyPoint ?? post.data.excerpt;
 
 const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .filter((item) => item.slug !== post.slug && inferTrack(item) === track)
@@ -37,13 +34,7 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .slice(0, 4);
 ---
 
-<BaseLayout
-  title={`${post.data.title} | ADHD 中文知识库`}
-  description={post.data.excerpt}
-  image={post.data.cover?.src}
-  articleType="article"
-  publishedTime={post.data.date.toISOString()}
->
+<BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
   <nav class="mb-3 text-sm text-[#9ab0d6]">
     <a href={base} class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
   </nav>
@@ -75,8 +66,6 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
       <div class="prose article-prose mt-8 max-w-none">
         <Content />
       </div>
-
-      <ShareButtons title={post.data.title} description={shareDescription} url={shareUrl} />
     </article>
 
     <aside class="reading-sidecar" aria-label="阅读辅助面板">
