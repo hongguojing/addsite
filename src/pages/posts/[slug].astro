@@ -98,7 +98,6 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
       <article class="reading-article">
         <p class="reading-post-meta">{post.data.date.toISOString().slice(0, 10)} · {sectionLabel}</p>
         <h1 class="reading-post-title">{post.data.title}</h1>
-        <p class="reading-post-lead">{post.data.excerpt}</p>
 
         <div class="reading-meta-row overflow-hidden whitespace-nowrap">
           {post.data.tags.slice(0, 4).map((tag) => (
@@ -114,12 +113,14 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
           ) : null
         }
 
-        <div class="reading-keypoint">
-          <p class="reading-keypoint-text">一句话结论：{highlightText}</p>
-        </div>
-
         <div class="prose article-prose mt-8 max-w-none">
           <Content />
+        </div>
+
+        <p class="reading-post-lead">{post.data.excerpt}</p>
+
+        <div class="reading-keypoint">
+          <p class="reading-keypoint-text">一句话结论：{highlightText}</p>
         </div>
       </article>
 
