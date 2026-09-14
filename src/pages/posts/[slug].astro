@@ -2,21 +2,44 @@
 import { getCollection, getEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getTrackMeta, inferTrack } from "../../lib/taxonomy";
+import { toShortSlug } from "../../lib/shortSlug";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
-  return posts.map((post) => ({ params: { slug: post.slug } }));
+  const usedShortSlugs = new Set<string>();
+
+  return posts.flatMap((post) => {
+    const shortSlug = toShortSlug(post.slug);
+    if (usedShortSlugs.has(shortSlug)) {
+      throw new Error(`短链接冲突，请调整算法或长度: ${shortSlug}`);
+    }
+    usedShortSlugs.add(shortSlug);
+
+    const shortRoute = {
+      params: { slug: shortSlug },
+      props: { postSlug: post.slug, shortSlug, isLegacy: false },
+    };
+
+    if (post.slug === shortSlug) {
+      return [shortRoute];
+    }
+
+    const legacyRoute = {
+      params: { slug: post.slug },
+      props: { postSlug: post.slug, shortSlug, isLegacy: true },
+    };
+
+    return [shortRoute, legacyRoute];
+  });
 }
 
 const base = import.meta.env.BASE_URL;
-const { slug } = Astro.params;
-if (!slug) {
-  throw new Error("缺少 slug 参数");
-}
+const { postSlug, shortSlug, isLegacy = false } = Astro.props;
+const canonicalPostPath = `${base}/posts/${shortSlug}/`;
 
-const post = await getEntry("posts", slug);
+const post = await getEntry("posts", postSlug);
 if (!post) {
-  throw new Error(`文章不存在: ${slug}`);
+  throw new Error(`文章不存在: ${postSlug}`);
 }
 
 const { Content, headings } = await post.render();
@@ -25,8 +48,23 @@ const tocItems = headings.filter((item) => item.depth === 2 || item.depth === 3)
 const track = inferTrack(post);
 const sectionLabel = getTrackMeta(track).label;
 const sectionHref = `${base}${getTrackMeta(track).href.replace(/^\//, "")}`;
-const readMinutes = post.data.readMinutes ?? 8;
-const views = post.data.views ?? "1.0k";
+
+const tagPalette = [
+  { bg: "rgba(130, 164, 235, 0.22)", border: "rgba(130, 164, 235, 0.4)", text: "#d9e8ff" },
+  { bg: "rgba(141, 190, 169, 0.2)", border: "rgba(141, 190, 169, 0.4)", text: "#dcf7ea" },
+  { bg: "rgba(188, 160, 221, 0.22)", border: "rgba(188, 160, 221, 0.42)", text: "#f1e5ff" },
+  { bg: "rgba(214, 172, 142, 0.2)", border: "rgba(214, 172, 142, 0.38)", text: "#ffeddc" },
+  { bg: "rgba(139, 182, 203, 0.2)", border: "rgba(139, 182, 203, 0.4)", text: "#dff4ff" },
+  { bg: "rgba(178, 173, 216, 0.22)", border: "rgba(178, 173, 216, 0.42)", text: "#ece9ff" },
+] as const;
+
+const hashTag = (tag: string) =>
+  tag.split("").reduce((acc, char) => Math.imul(acc, 31) + char.charCodeAt(0), 7) >>> 0;
+
+const getTagStyle = (tag: string) => {
+  const palette = tagPalette[hashTag(tag) % tagPalette.length];
+  return `background:${palette.bg};border-color:${palette.border};color:${palette.text};`;
+};
 
 const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .filter((item) => item.slug !== post.slug && inferTrack(item) === track)
@@ -34,125 +72,142 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .slice(0, 4);
 ---
 
-<BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
-  <nav class="mb-3 text-sm text-[#9ab0d6]">
-    <a href={base} class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
-  </nav>
+{isLegacy ? (
+  <BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
+    <section class="glass-card mx-auto max-w-2xl rounded-2xl p-8 text-center">
+      <h1 class="text-2xl font-bold text-[#eef4ff]">链接已更新</h1>
+      <p class="mt-3 text-[#acc0e2]">该文章地址已切换为短链接，正在为你自动跳转。</p>
+      <p class="mt-4">
+        <a href={canonicalPostPath} class="text-[#b6ccf0] hover:text-[#deebff] underline underline-offset-4">
+          点击立即前往新链接
+        </a>
+      </p>
+    </section>
 
-  <div class="post-reading-layout">
-    <article class="reading-article">
-      <p class="reading-post-meta">{post.data.date.toISOString().slice(0, 10)} · {sectionLabel}</p>
-      <h1 class="reading-post-title">{post.data.title}</h1>
-      <p class="reading-post-lead">{post.data.excerpt}</p>
+    <script define:vars={{ canonicalPostPath }}>
+      window.location.replace(canonicalPostPath);
+    </script>
+  </BaseLayout>
+) : (
+  <BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
+    <nav class="mb-3 text-sm text-[#9ab0d6]">
+      <a href={base} class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
+    </nav>
 
-      <div class="reading-meta-row">
-        <span class="reading-meta-pill">{readMinutes} 分钟阅读</span>
-        <span class="reading-meta-pill">{views} 阅读</span>
-        {post.data.tags.slice(0, 4).map((tag) => <span class="reading-meta-pill">#{tag}</span>)}
-      </div>
+    <div class="post-reading-layout">
+      <article class="reading-article">
+        <p class="reading-post-meta">{post.data.date.toISOString().slice(0, 10)} · {sectionLabel}</p>
+        <h1 class="reading-post-title">{post.data.title}</h1>
+        <p class="reading-post-lead">{post.data.excerpt}</p>
 
-      {
-        post.data.cover ? (
-          <figure class="reading-cover-wrap">
-            <img src={post.data.cover.src} alt={`${post.data.title} 封面`} class="reading-cover" loading="lazy" />
-          </figure>
-        ) : null
-      }
-
-      <div class="reading-keypoint">
-        <p class="reading-keypoint-text">一句话结论：{highlightText}</p>
-      </div>
-
-      <div class="prose article-prose mt-8 max-w-none">
-        <Content />
-      </div>
-    </article>
-
-    <aside class="reading-sidecar" aria-label="阅读辅助面板">
-      <section class="reading-toc-card" aria-label="文章目录">
-        <div class="reading-toc-head">
-          <span>目录</span>
-          <span>{tocItems.length}</span>
+        <div class="reading-meta-row overflow-hidden whitespace-nowrap">
+          {post.data.tags.slice(0, 4).map((tag) => (
+            <span class="reading-meta-pill shrink-0" style={getTagStyle(tag)}>{tag}</span>
+          ))}
         </div>
 
         {
-          tocItems.length > 0 ? (
-            <ol id="readingTocList" class="reading-toc-list">
-              {tocItems.map((item) => (
-                <li class={`toc-depth-${item.depth}`}>
-                  <a href={`#${item.slug}`} data-toc-link>
-                    {item.text}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          ) : (
-            <p class="reading-toc-empty">当前文章没有可显示的标题目录。</p>
-          )
+          post.data.cover ? (
+            <figure class="reading-cover-wrap">
+              <img src={post.data.cover.src} alt={`${post.data.title} 封面`} class="reading-cover" loading="lazy" />
+            </figure>
+          ) : null
         }
-      </section>
 
-      <section class="reading-toc-card mt-3" aria-label="相关推荐">
-        <div class="reading-toc-head">
-          <span>相关推荐</span>
-          <a href={sectionHref} class="text-xs text-[#a9bfdf] hover:text-[#e7f0ff]">更多</a>
+        <div class="reading-keypoint">
+          <p class="reading-keypoint-text">一句话结论：{highlightText}</p>
         </div>
 
-        {
-          relatedPosts.length > 0 ? (
-            <div class="mt-2 grid gap-2">
-              {relatedPosts.map((item) => (
-                <a href={`${base}/posts/${item.slug}/`} class="related-link">
-                  <p class="related-title">{item.data.title}</p>
-                  <p class="related-meta">{item.data.readMinutes ?? 8} 分钟 · {item.data.views ?? "1.0k"} 阅读</p>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <p class="reading-toc-empty mt-2">暂无更多同主题文章。</p>
-          )
-        }
-      </section>
-    </aside>
-  </div>
+        <div class="prose article-prose mt-8 max-w-none">
+          <Content />
+        </div>
+      </article>
 
-  <script>
-    const tocLinks = Array.from(document.querySelectorAll("[data-toc-link]"));
-    const observedHeadings = tocLinks
-      .map((link) => {
-        const id = link.getAttribute("href")?.replace("#", "");
-        if (!id) return null;
-        return document.getElementById(id);
-      })
-      .filter(Boolean);
+      <aside class="reading-sidecar" aria-label="阅读辅助面板">
+        <section class="reading-toc-card" aria-label="文章目录">
+          <div class="reading-toc-head">
+            <span>目录</span>
+            <span>{tocItems.length}</span>
+          </div>
 
-    const activateTocLink = (id) => {
-      tocLinks.forEach((link) => {
-        const target = link.getAttribute("href");
-        const isActive = target === `#${id}`;
-        link.classList.toggle("is-active", isActive);
-      });
-    };
-
-    if (observedHeadings.length > 0) {
-      const io = new IntersectionObserver(
-        (entries) => {
-          const visible = entries
-            .filter((entry) => entry.isIntersecting)
-            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-
-          if (visible.length > 0) {
-            activateTocLink(visible[0].target.id);
+          {
+            tocItems.length > 0 ? (
+              <ol id="readingTocList" class="reading-toc-list">
+                {tocItems.map((item) => (
+                  <li class={`toc-depth-${item.depth}`}>
+                    <a href={`#${item.slug}`} data-toc-link>
+                      {item.text}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p class="reading-toc-empty">当前文章没有可显示的标题目录。</p>
+            )
           }
-        },
-        {
-          rootMargin: "-24% 0px -62% 0px",
-          threshold: [0.1, 0.6, 1],
-        },
-      );
+        </section>
 
-      observedHeadings.forEach((heading) => io.observe(heading));
-      activateTocLink(observedHeadings[0].id);
-    }
-  </script>
-</BaseLayout>
+        <section class="reading-toc-card mt-3" aria-label="相关推荐">
+          <div class="reading-toc-head">
+            <span>相关推荐</span>
+            <a href={sectionHref} class="text-xs text-[#a9bfdf] hover:text-[#e7f0ff]">更多</a>
+          </div>
+
+          {
+            relatedPosts.length > 0 ? (
+              <div class="mt-2 grid gap-2">
+                {relatedPosts.map((item) => (
+                  <a href={`${base}/posts/${toShortSlug(item.slug)}/`} class="related-link">
+                    <p class="related-title">{item.data.title}</p>
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p class="reading-toc-empty mt-2">暂无更多同主题文章。</p>
+            )
+          }
+        </section>
+      </aside>
+    </div>
+
+    <script>
+      const tocLinks = Array.from(document.querySelectorAll("[data-toc-link]"));
+      const observedHeadings = tocLinks
+        .map((link) => {
+          const id = link.getAttribute("href")?.replace("#", "");
+          if (!id) return null;
+          return document.getElementById(id);
+        })
+        .filter(Boolean);
+
+      const activateTocLink = (id) => {
+        tocLinks.forEach((link) => {
+          const target = link.getAttribute("href");
+          const isActive = target === `#${id}`;
+          link.classList.toggle("is-active", isActive);
+        });
+      };
+
+      if (observedHeadings.length > 0) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            const visible = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+            if (visible.length > 0) {
+              activateTocLink(visible[0].target.id);
+            }
+          },
+          {
+            rootMargin: "-24% 0px -62% 0px",
+            threshold: [0.1, 0.6, 1],
+          },
+        );
+
+        observedHeadings.forEach((heading) => io.observe(heading));
+        activateTocLink(observedHeadings[0].id);
+      }
+    </script>
+  </BaseLayout>
+)}

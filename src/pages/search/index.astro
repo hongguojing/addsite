@@ -1,7 +1,40 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { toShortSlug } from "../../lib/shortSlug";
 
 const base = import.meta.env.BASE_URL;
+
+const posts = await getCollection("posts", ({ data }) => !data.draft);
+const slugAliasMap = Object.fromEntries(posts.map((post) => [post.slug, toShortSlug(post.slug)]));
+
+const sectionLabelMap = {
+  science: "认识 ADHD",
+  practice: "评估与诊断",
+  belike: "生活",
+} as const;
+
+const postMetaMap = Object.fromEntries(
+  posts.map((post) => {
+    const shortSlug = toShortSlug(post.slug);
+    const date = post.data.date.toISOString().slice(0, 10);
+    const section = sectionLabelMap[post.data.section];
+    return [shortSlug, { date, section }];
+  }),
+);
+
+const localSearchDataset = posts.map((post) => {
+  const shortSlug = toShortSlug(post.slug);
+  const section = sectionLabelMap[post.data.section];
+  return {
+    title: post.data.title,
+    excerpt: post.data.excerpt,
+    tags: post.data.tags,
+    section,
+    date: post.data.date.toISOString().slice(0, 10),
+    url: `${base}/posts/${shortSlug}/`,
+  };
+});
 ---
 
 <BaseLayout title="搜索 | ADHD 中文知识库">
@@ -21,7 +54,7 @@ const base = import.meta.env.BASE_URL;
     <div id="searchResults" class="search-results"></div>
   </section>
 
-  <script>
+  <script define:vars={{ base, slugAliasMap, postMetaMap, localSearchDataset }}>
     const stateEl = document.querySelector("#searchState");
     const resultsEl = document.querySelector("#searchResults");
     const inputEl = document.querySelector("#searchInput");
@@ -46,7 +79,53 @@ const base = import.meta.env.BASE_URL;
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
 
-    const renderResults = (items) => {
+    const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const highlightText = (text, keyword) => {
+      if (!keyword) return escapeHtml(text || "");
+      const source = text || "";
+      const regex = new RegExp(escapeRegExp(keyword), "ig");
+      let lastIndex = 0;
+      let html = "";
+
+      source.replace(regex, (match, offset) => {
+        html += escapeHtml(source.slice(lastIndex, offset));
+        html += `<mark>${escapeHtml(match)}</mark>`;
+        lastIndex = offset + match.length;
+        return match;
+      });
+
+      html += escapeHtml(source.slice(lastIndex));
+      return html;
+    };
+
+    const normalizeResult = (rawUrl) => {
+      try {
+        const resolved = new URL(rawUrl, window.location.origin);
+        const match = resolved.pathname.match(/\/posts\/([^/]+)\/?$/);
+        if (!match) {
+          return {
+            normalizedUrl: resolved.pathname + resolved.search + resolved.hash,
+            shortSlug: null,
+          };
+        }
+
+        const currentSlug = decodeURIComponent(match[1]);
+        const shortSlug = slugAliasMap[currentSlug] ?? currentSlug;
+        resolved.pathname = `${base}/posts/${shortSlug}/`;
+        return {
+          normalizedUrl: resolved.pathname + resolved.search + resolved.hash,
+          shortSlug,
+        };
+      } catch {
+        return {
+          normalizedUrl: rawUrl,
+          shortSlug: null,
+        };
+      }
+    };
+
+    const renderResults = (items, keyword) => {
       if (!resultsEl) return;
       if (items.length === 0) {
         resultsEl.innerHTML = "";
@@ -54,16 +133,33 @@ const base = import.meta.env.BASE_URL;
         return;
       }
 
-      setState(`找到 ${items.length} 条结果`);
-      resultsEl.innerHTML = items
-        .map(
-          (item) => `
+      const uniqueItems = [];
+      const seen = new Set();
+      for (const item of items) {
+        const { normalizedUrl, shortSlug } = normalizeResult(item.url);
+        if (seen.has(normalizedUrl)) continue;
+        seen.add(normalizedUrl);
+        uniqueItems.push({ ...item, url: normalizedUrl, shortSlug });
+      }
+
+      setState(`找到 ${uniqueItems.length} 条结果`);
+      resultsEl.innerHTML = uniqueItems
+        .map((item) => {
+          const meta = item.shortSlug ? postMetaMap[item.shortSlug] : null;
+          const title = highlightText(item.meta.title || "未命名文章", keyword);
+          const excerpt = highlightText(item.excerpt || "", keyword);
+          const metaLine = meta
+            ? `<div class="result-meta"><span>${escapeHtml(meta.section)}</span><span>${escapeHtml(meta.date)}</span></div>`
+            : "";
+
+          return `
             <a class="result-card" href="${item.url}">
-              <h3>${escapeHtml(item.meta.title || "未命名文章")}</h3>
-              <p>${escapeHtml(item.excerpt || "")}</p>
+              ${metaLine}
+              <h3>${title}</h3>
+              <p>${excerpt}</p>
             </a>
-          `,
-        )
+          `;
+        })
         .join("");
     };
 
@@ -82,6 +178,35 @@ const base = import.meta.env.BASE_URL;
       return window.pagefind;
     };
 
+    const searchLocally = (keyword) => {
+      const normalizedKeyword = keyword.toLowerCase();
+      const results = localSearchDataset
+        .map((item) => {
+          const haystack = `${item.title} ${item.excerpt} ${item.tags.join(" ")} ${item.section}`.toLowerCase();
+          const hitIndex = haystack.indexOf(normalizedKeyword);
+          if (hitIndex === -1) return null;
+
+          const score = item.title.toLowerCase().includes(normalizedKeyword)
+            ? 3
+            : item.tags.some((tag) => tag.toLowerCase().includes(normalizedKeyword))
+              ? 2
+              : 1;
+
+          return {
+            meta: { title: item.title },
+            excerpt: item.excerpt,
+            url: item.url,
+            _score: score,
+            _hitIndex: hitIndex,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b._score - a._score || a._hitIndex - b._hitIndex)
+        .slice(0, 20);
+
+      return results;
+    };
+
     const runSearch = async (keyword) => {
       if (!keyword) {
         setState("请输入关键词开始搜索。");
@@ -94,12 +219,17 @@ const base = import.meta.env.BASE_URL;
       try {
         const pagefind = await ensurePagefind();
         if (!pagefind) throw new Error("no pagefind");
-        const result = await pagefind.search(keyword, { excerptLength: 24 });
-        const data = await Promise.all(result.results.slice(0, 12).map((item) => item.data()));
-        renderResults(data);
+        const result = await pagefind.search(keyword, { excerptLength: 36 });
+        const data = await Promise.all(result.results.slice(0, 20).map((item) => item.data()));
+        renderResults(data, keyword);
       } catch (error) {
-        setState("搜索索引尚未准备好。请先执行 npm run build。");
-        if (resultsEl) resultsEl.innerHTML = "";
+        const localResults = searchLocally(keyword);
+        renderResults(localResults, keyword);
+        setState(
+          localResults.length > 0
+            ? `找到 ${localResults.length} 条结果（本地模式）`
+            : "没有找到匹配内容（本地模式）。可以换个关键词试试。",
+        );
       }
     };
 

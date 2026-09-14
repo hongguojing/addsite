@@ -1,7 +1,9 @@
 ---
+import { getImage } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import MotionReveal from "./motion/MotionReveal.vue";
 import { getTrackMeta, inferTrack } from "../lib/taxonomy";
+import { toShortSlug } from "../lib/shortSlug";
 
 interface Props {
   post: CollectionEntry<"posts">;
@@ -12,24 +14,44 @@ const { post, delay = 0 } = Astro.props;
 const dateText = post.data.date.toISOString().slice(0, 10);
 const base = import.meta.env.BASE_URL;
 
-const sectionBadgeClassMap = {
-  understand: "border-[#8f92d7] bg-[#4b4ca0]/35 text-[#d7d8ff]",
-  assessment: "border-[#70a8d5] bg-[#23618f]/32 text-[#cde9ff]",
-  treatment: "border-[#9e7adf] bg-[#6b3fb4]/30 text-[#efe1ff]",
-  life: "border-[#76bad2] bg-[#1f587f]/30 text-[#def6ff]",
-} as const;
-
 const track = inferTrack(post);
 const sectionLabel = getTrackMeta(track).label;
-const sectionBadgeClass = sectionBadgeClassMap[track];
 
-const readMinutes = post.data.readMinutes ?? 8;
-const views = post.data.views ?? "1.2k";
+const topKeywordTags = post.data.tags.slice(0, 4);
+
+const tagPalette = [
+  { bg: "rgba(130, 164, 235, 0.22)", border: "rgba(130, 164, 235, 0.4)", text: "#d9e8ff" },
+  { bg: "rgba(141, 190, 169, 0.2)", border: "rgba(141, 190, 169, 0.4)", text: "#dcf7ea" },
+  { bg: "rgba(188, 160, 221, 0.22)", border: "rgba(188, 160, 221, 0.42)", text: "#f1e5ff" },
+  { bg: "rgba(214, 172, 142, 0.2)", border: "rgba(214, 172, 142, 0.38)", text: "#ffeddc" },
+  { bg: "rgba(139, 182, 203, 0.2)", border: "rgba(139, 182, 203, 0.4)", text: "#dff4ff" },
+  { bg: "rgba(178, 173, 216, 0.22)", border: "rgba(178, 173, 216, 0.42)", text: "#ece9ff" },
+] as const;
+
+const hashTag = (tag: string) =>
+  tag.split("").reduce((acc, char) => Math.imul(acc, 31) + char.charCodeAt(0), 7) >>> 0;
+
+const getTagStyle = (tag: string) => {
+  const palette = tagPalette[hashTag(tag) % tagPalette.length];
+  return `background:${palette.bg};border-color:${palette.border};color:${palette.text};`;
+};
+
+const coverThumb = post.data.cover
+  ? await getImage({
+      src: post.data.cover,
+      width: 420,
+      height: 260,
+      fit: "cover",
+      quality: 78,
+      format: "webp",
+    })
+  : null;
+
 ---
 
 <MotionReveal client:visible delay={delay}>
   <a
-    href={`${base}/posts/${post.slug}/`}
+    href={`${base}/posts/${toShortSlug(post.slug)}/`}
     class="group block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#b9a0ff]/80"
   >
     <article
@@ -37,9 +59,11 @@ const views = post.data.views ?? "1.2k";
     >
       <!-- 左侧封面：与文字等高 -->
       <div class="w-36 md:w-52 shrink-0 overflow-hidden rounded-xl">
-        {post.data.cover ? (
+        {coverThumb ? (
           <img
-            src={post.data.cover.src}
+            src={coverThumb.src}
+            width={coverThumb.attributes.width}
+            height={coverThumb.attributes.height}
             alt={`${post.data.title} 封面`}
             class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
             loading="lazy"
@@ -54,13 +78,21 @@ const views = post.data.views ?? "1.2k";
       <!-- 右侧内容 -->
       <div class="min-w-0 flex-1">
         <div class="flex items-center justify-between gap-3">
-          <span
-            class={`rounded-full border px-2 py-1 text-xs font-semibold tracking-[0.08em] ${sectionBadgeClass}`}
-          >
-            {sectionLabel}
-          </span>
+          <div class="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
+            {topKeywordTags.length > 0 ? (
+              topKeywordTags.map((tag) => (
+                <span class="shrink-0 rounded-full border px-2 py-1 text-xs font-semibold" style={getTagStyle(tag)}>
+                  {tag}
+                </span>
+              ))
+            ) : (
+              <span class="rounded-full border border-[#70a8d5] bg-[#23618f]/32 px-2 py-1 text-xs font-semibold text-[#cde9ff]">
+                {sectionLabel}
+              </span>
+            )}
+          </div>
 
-          <p class="text-xs tracking-[0.06em] text-[#8ea7d1]">
+          <p class="shrink-0 text-xs tracking-[0.06em] text-[#8ea7d1]">
             {dateText}
           </p>
         </div>
@@ -73,16 +105,6 @@ const views = post.data.views ?? "1.2k";
           {post.data.excerpt}
         </p>
 
-        <div class="mt-4 flex flex-wrap items-center gap-3 text-xs text-[#9fb5d8]">
-          <span>{readMinutes} 分钟</span>
-          <span>{views} 阅读</span>
-
-          {post.data.tags.slice(0, 2).map((tag) => (
-            <span class="rounded-full border border-[#95a8cf]/28 px-2 py-0.5">
-              #{tag}
-            </span>
-          ))}
-        </div>
       </div>
     </article>
   </a>
