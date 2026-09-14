@@ -34,7 +34,13 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .slice(0, 4);
 ---
 
-<BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
+<BaseLayout
+  title={`${post.data.title} | ADHD 中文知识库`}
+  description={post.data.excerpt}
+  image={post.data.cover?.src}
+  articleType="article"
+  publishedTime={post.data.date.toISOString()}
+>
   <nav class="mb-3 text-sm text-[#9ab0d6]">
     <a href={base} class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
   </nav>
