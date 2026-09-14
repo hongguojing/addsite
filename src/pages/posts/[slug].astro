@@ -1,6 +1,7 @@
 ---
 import { getCollection, getEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import ShareButtons from "../../components/ShareButtons.astro";
 import { getTrackMeta, inferTrack } from "../../lib/taxonomy";
 
 export async function getStaticPaths() {
@@ -27,6 +28,8 @@ const sectionLabel = getTrackMeta(track).label;
 const sectionHref = `${base}${getTrackMeta(track).href.replace(/^\//, "")}`;
 const readMinutes = post.data.readMinutes ?? 8;
 const views = post.data.views ?? "1.0k";
+const shareUrl = Astro.url.href;
+const shareDescription = post.data.keyPoint ?? post.data.excerpt;
 
 const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .filter((item) => item.slug !== post.slug && inferTrack(item) === track)
@@ -72,6 +75,8 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
       <div class="prose article-prose mt-8 max-w-none">
         <Content />
       </div>
+
+      <ShareButtons title={post.data.title} description={shareDescription} url={shareUrl} />
     </article>
 
     <aside class="reading-sidecar" aria-label="阅读辅助面板">

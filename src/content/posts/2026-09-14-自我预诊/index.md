@@ -3,13 +3,14 @@ title: 自我预诊
 date: 2026-09-14
 section: science
 track: understand
-excerpt: 请在这里写一句摘要
-keyPoint: 请在这里写本文最重要的一句话
+excerpt: 这里是摘要
+keyPoint: 这里是最重要的话
+cover:  ./zhuanzhuli.png
 readMinutes: 8
 views: "0"
 tags:
   - 待补充
-draft: true
+draft: false
 ---
 
 在这里开始写正文。
