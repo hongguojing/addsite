@@ -9,7 +9,7 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft))
 
 <BaseLayout title="全部文章 | ADHD 中文知识库">
   <section class="hero-card">
-    <p class="text-xs tracking-[0.2em] text-[#95aad0]">ARCHIVE</p>
+    <p class="text-xs tracking-[0.2em] text-[var(--hero-subtitle)]">ARCHIVE</p>
     <h1 class="hero-title mt-2">全部文章</h1>
     <p class="hero-lead">按时间浏览完整内容库。每篇文章独立目录，封面、插图与文献可同目录维护。</p>
   </section>

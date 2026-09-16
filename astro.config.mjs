@@ -11,6 +11,14 @@ export default defineConfig({
     mdx(),
     vue({ appEntrypoint: "/src/vue/motion-app.ts" }),
   ],
+  markdown: {
+    shikiConfig: {
+      // Dual themes: the active one is picked in global.css via [data-theme]
+      themes: { light: "github-light", dark: "github-dark" },
+      defaultColor: false,
+      wrap: false,
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -28,7 +28,7 @@ ADHD，即**注意缺陷多动障碍（Attention-Deficit/Hyperactivity Disorder�
 
 ---
 
-# 误区一：ADHD 就是“懒”
+## 误区一：ADHD 就是“懒”
 
 这是最常见的一种误解。
 
@@ -102,7 +102,7 @@ ADHD，即**注意缺陷多动障碍（Attention-Deficit/Hyperactivity Disorder�
 
 ---
 
-# 误区二：ADHD 是“管教问题”，管严一点就好了
+## 误区二：ADHD 是“管教问题”，管严一点就好了
 
 第二个常见误区是：
 
@@ -192,7 +192,7 @@ ADHD，即**注意缺陷多动障碍（Attention-Deficit/Hyperactivity Disorder�
 
 ---
 
-# 误区三：ADHD 长大以后自然就消失了
+## 误区三：ADHD 长大以后自然就消失了
 
 这可能是关于 ADHD 最典型的误解之一。
 
@@ -290,7 +290,7 @@ ADHD，即**注意缺陷多动障碍（Attention-Deficit/Hyperactivity Disorder�
 
 ---
 
-# 所以，ADHD 到底应该怎样理解？
+## 所以，ADHD 到底应该怎样理解？
 
 把这三个误区放在一起，我们会发现一个共同的问题：
 
@@ -334,7 +334,7 @@ ADHD，即**注意缺陷多动障碍（Attention-Deficit/Hyperactivity Disorder�
 
 ---
 
-# 最后：不要把“理解”误解成“纵容”
+## 最后：不要把“理解”误解成“纵容”
 
 这是 ADHD 科普中同样重要的一句话。
 

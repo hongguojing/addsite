@@ -56,8 +56,6 @@ const sideNav = [
             </a>
           ))}
         </nav>
-
-        
       </aside>
 
       <div class="site-main">
@@ -69,9 +67,13 @@ const sideNav = [
             </svg>
             <input id="siteSearch" type="text" name="q" placeholder="搜索文章、关键词、问题..." />
           </form>
-          <div class="toolbar-actions" aria-hidden="true">
-            <span>☼</span>
-            <span>◐</span>
+          <div class="toolbar-actions">
+            <button type="button" class="theme-toggle" data-theme-target="dark" aria-label="切换深色主题" title="深色主题">
+              <span aria-hidden="true">☼</span>
+            </button>
+            <button type="button" class="theme-toggle" data-theme-target="light" aria-label="切换浅色主题" title="浅色主题">
+              <span aria-hidden="true">◐</span>
+            </button>
           </div>
         </header>
 
@@ -84,5 +86,91 @@ const sideNav = [
         </footer>
       </div>
     </div>
+
+    <script>
+      (() => {
+        const root = document.documentElement;
+        const STORAGE_KEY = "adhd-kb-theme";
+
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const systemLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+        const initial = saved || (systemLight ? "light" : "dark");
+        root.setAttribute("data-theme", initial);
+
+        const syncButtons = () => {
+          const current = root.getAttribute("data-theme") || "dark";
+          document.querySelectorAll("[data-theme-target]").forEach((btn) => {
+            btn.classList.toggle("is-active", btn.getAttribute("data-theme-target") === current);
+          });
+        };
+
+        document.querySelectorAll("[data-theme-target]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-theme-target");
+            root.setAttribute("data-theme", target);
+            localStorage.setItem(STORAGE_KEY, target);
+            syncButtons();
+          });
+        });
+
+        syncButtons();
+      })();
+    </script>
+
+    <script>
+      // Hide the sticky toolbar while the reader scrolls down, bring it back
+      // as soon as they scroll up. Never hide it while typing in the search box.
+      (() => {
+        const toolbar = document.querySelector(".top-toolbar");
+        if (!toolbar) return;
+
+        const searchInput = document.querySelector("#siteSearch");
+        const HIDE_AFTER = 140;
+        const DELTA = 6;
+
+        let lastY = window.scrollY;
+        let hidden = false;
+        let ticking = false;
+
+        const setHidden = (next) => {
+          if (next === hidden) return;
+          hidden = next;
+          toolbar.classList.toggle("is-hidden", hidden);
+          document.body.classList.toggle("toolbar-hidden", hidden);
+        };
+
+        const update = () => {
+          ticking = false;
+          const y = window.scrollY;
+          const diff = y - lastY;
+
+          if (Math.abs(diff) < DELTA) return;
+
+          const isTyping = !!searchInput && document.activeElement === searchInput;
+
+          if (y <= HIDE_AFTER || diff < 0 || isTyping) {
+            setHidden(false);
+          } else {
+            setHidden(true);
+          }
+
+          lastY = y;
+        };
+
+        window.addEventListener(
+          "scroll",
+          () => {
+            if (!ticking) {
+              ticking = true;
+              requestAnimationFrame(update);
+            }
+          },
+          { passive: true },
+        );
+
+        // Keep it visible whenever the search box is used
+        searchInput?.addEventListener("focus", () => setHidden(false));
+      })();
+    </script>
   </body>
 </html>

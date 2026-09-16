@@ -49,22 +49,11 @@ const track = inferTrack(post);
 const sectionLabel = getTrackMeta(track).label;
 const sectionHref = `${base}${getTrackMeta(track).href.replace(/^\//, "")}`;
 
-const tagPalette = [
-  { bg: "rgba(130, 164, 235, 0.22)", border: "rgba(130, 164, 235, 0.4)", text: "#d9e8ff" },
-  { bg: "rgba(141, 190, 169, 0.2)", border: "rgba(141, 190, 169, 0.4)", text: "#dcf7ea" },
-  { bg: "rgba(188, 160, 221, 0.22)", border: "rgba(188, 160, 221, 0.42)", text: "#f1e5ff" },
-  { bg: "rgba(214, 172, 142, 0.2)", border: "rgba(214, 172, 142, 0.38)", text: "#ffeddc" },
-  { bg: "rgba(139, 182, 203, 0.2)", border: "rgba(139, 182, 203, 0.4)", text: "#dff4ff" },
-  { bg: "rgba(178, 173, 216, 0.22)", border: "rgba(178, 173, 216, 0.42)", text: "#ece9ff" },
-] as const;
-
+// Tag colors come from .tag-pal-0 … .tag-pal-5 in global.css (theme-aware)
 const hashTag = (tag: string) =>
   tag.split("").reduce((acc, char) => Math.imul(acc, 31) + char.charCodeAt(0), 7) >>> 0;
 
-const getTagStyle = (tag: string) => {
-  const palette = tagPalette[hashTag(tag) % tagPalette.length];
-  return `background:${palette.bg};border-color:${palette.border};color:${palette.text};`;
-};
+const tagPalClass = (tag: string) => `tag-pal-${hashTag(tag) % 6}`;
 
 const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   .filter((item) => item.slug !== post.slug && inferTrack(item) === track)
@@ -75,10 +64,10 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
 {isLegacy ? (
   <BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
     <section class="glass-card mx-auto max-w-2xl rounded-2xl p-8 text-center">
-      <h1 class="text-2xl font-bold text-[#eef4ff]">链接已更新</h1>
-      <p class="mt-3 text-[#acc0e2]">该文章地址已切换为短链接，正在为你自动跳转。</p>
+      <h1 class="text-2xl font-bold text-[var(--card-title)]">链接已更新</h1>
+      <p class="mt-3 text-[var(--card-excerpt)]">该文章地址已切换为短链接，正在为你自动跳转。</p>
       <p class="mt-4">
-        <a href={canonicalPostPath} class="text-[#b6ccf0] hover:text-[#deebff] underline underline-offset-4">
+        <a href={canonicalPostPath} class="text-[var(--link-text)] hover:text-[var(--link-hover)] underline underline-offset-4">
           点击立即前往新链接
         </a>
       </p>
@@ -90,8 +79,8 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
   </BaseLayout>
 ) : (
   <BaseLayout title={`${post.data.title} | ADHD 中文知识库`} description={post.data.excerpt}>
-    <nav class="mb-3 text-sm text-[#9ab0d6]">
-      <a href={base} class="hover:text-[#dceaff]">首页</a> / <a href={sectionHref} class="hover:text-[#dceaff]">{sectionLabel}</a> / 文章
+    <nav class="mb-3 text-sm text-[var(--breadcrumb)]">
+      <a href={base} class="hover:text-[var(--breadcrumb-hover)]">首页</a> / <a href={sectionHref} class="hover:text-[var(--breadcrumb-hover)]">{sectionLabel}</a> / 文章
     </nav>
 
     <div class="post-reading-layout">
@@ -101,7 +90,7 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
 
         <div class="reading-meta-row overflow-hidden whitespace-nowrap">
           {post.data.tags.slice(0, 4).map((tag) => (
-            <span class="reading-meta-pill shrink-0" style={getTagStyle(tag)}>{tag}</span>
+            <span class={`reading-meta-pill tag-pill ${tagPalClass(tag)} shrink-0`}>{tag}</span>
           ))}
         </div>
 
@@ -151,7 +140,7 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
         <section class="reading-toc-card mt-3" aria-label="相关推荐">
           <div class="reading-toc-head">
             <span>相关推荐</span>
-            <a href={sectionHref} class="text-xs text-[#a9bfdf] hover:text-[#e7f0ff]">更多</a>
+            <a href={sectionHref} class="text-xs text-[var(--more-link)] hover:text-[var(--more-link-hover)]">更多</a>
           </div>
 
           {

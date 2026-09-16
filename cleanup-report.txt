@@ -1,0 +1,5 @@
+﻿FAIL H:\addsite\.build.log : [safe-delete][SAFE_DELETE_FAIL_CLOSED] {"target":"H:\\addsite\\.build.log","reason":"trash-failed","detail":"ERROR H:\\addsite\\.build.log: Error during a `trash` operation: Unknown { description: \"Some operations were aborted\" }"}
+FAIL H:\addsite\.build.tail : [safe-delete][SAFE_DELETE_FAIL_CLOSED] {"target":"H:\\addsite\\.build.tail","reason":"trash-failed","detail":"ERROR H:\\addsite\\.build.tail: Error during a `trash` operation: Unknown { description: \"Some operations were aborted\" }"}
+FAIL H:\addsite\.httpcheck.txt : [safe-delete][SAFE_DELETE_FAIL_CLOSED] {"target":"H:\\addsite\\.httpcheck.txt","reason":"trash-failed","detail":"ERROR H:\\addsite\\.httpcheck.txt: Error during a `trash` operation: Unknown { description: \"Some operations were aborted\" }"}
+FAIL H:\addsite\.tmp-list.txt : [safe-delete][SAFE_DELETE_FAIL_CLOSED] {"target":"H:\\addsite\\.tmp-list.txt","reason":"trash-failed","detail":"ERROR H:\\addsite\\.tmp-list.txt: Error during a `trash` operation: Unknown { description: \"Some operations were aborted\" }"}
+.gitignore
