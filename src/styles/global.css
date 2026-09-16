@@ -894,30 +894,69 @@ body.toolbar-hidden .reading-sidecar {
 }
 
 /* ========================================================
-   THEME TOGGLE BUTTONS
+   THEME SWITCH  (sun = light · moon = dark)
    ======================================================== */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.16rem;
+  border: 1px solid rgba(153, 175, 218, 0.26);
+  border-radius: 999px;
+  background: rgba(15, 26, 48, 0.5);
+}
+
 .theme-toggle {
+  display: grid;
+  place-items: center;
+  width: 1.95rem;
+  height: 1.95rem;
+  padding: 0;
   cursor: pointer;
-  background: transparent;
-  border: 1px solid transparent;
   color: inherit;
-  font-size: 1.15rem;
-  line-height: 1;
-  padding: 0.35rem 0.55rem;
-  border-radius: 0.5rem;
-  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
-  opacity: 0.7;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0.6;
+  transition: opacity 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+.theme-icon {
+  display: block;
+  width: 1.05rem;
+  height: 1.05rem;
 }
 
 .theme-toggle:hover {
   opacity: 1;
-  background: rgba(155, 178, 222, 0.18);
+  background: rgba(155, 178, 222, 0.16);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .theme-toggle.is-active {
   opacity: 1;
-  border-color: currentColor;
-  background: rgba(255, 255, 255, 0.08);
+  color: #f4f8ff;
+  border-color: rgba(190, 162, 255, 0.5);
+  background: linear-gradient(120deg, rgba(168, 130, 255, 0.42), rgba(86, 186, 255, 0.28));
+}
+
+[data-theme="light"] .theme-switch {
+  border-color: rgba(45, 128, 116, 0.3);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+  background: rgba(45, 128, 116, 0.14);
+}
+
+[data-theme="light"] .theme-toggle.is-active {
+  color: #124e48;
+  border-color: rgba(45, 128, 116, 0.5);
+  background: linear-gradient(120deg, rgba(45, 128, 116, 0.24), rgba(90, 158, 165, 0.16));
 }
 
 /* ========================================================
@@ -1072,15 +1111,6 @@ body.toolbar-hidden .reading-sidecar {
 
 [data-theme="light"] .toolbar-actions {
   color: #4b5563;
-}
-
-[data-theme="light"] .theme-toggle:hover {
-  background: rgba(45, 128, 116, 0.14);
-}
-
-[data-theme="light"] .theme-toggle.is-active {
-  background: rgba(45, 128, 116, 0.18);
-  border-color: rgba(45, 128, 116, 0.5);
 }
 
 [data-theme="light"] .hero-card {

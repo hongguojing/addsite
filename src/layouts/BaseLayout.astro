@@ -22,7 +22,7 @@ const sideNav = [
 ---
 
 <!doctype html>
-<html lang="zh-Hans">
+<html lang="zh-Hans" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,6 +31,18 @@ const sideNav = [
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&display=swap" rel="stylesheet" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <script is:inline>
+      // Runs before first paint: default is dark, only an explicit saved
+      // choice can switch it to light (system preference is ignored).
+      (() => {
+        try {
+          const saved = localStorage.getItem("adhd-kb-theme");
+          document.documentElement.setAttribute("data-theme", saved === "light" ? "light" : "dark");
+        } catch {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div class="site-shell">
@@ -68,12 +80,32 @@ const sideNav = [
             <input id="siteSearch" type="text" name="q" placeholder="搜索文章、关键词、问题..." />
           </form>
           <div class="toolbar-actions">
-            <button type="button" class="theme-toggle" data-theme-target="dark" aria-label="切换深色主题" title="深色主题">
-              <span aria-hidden="true">☼</span>
-            </button>
-            <button type="button" class="theme-toggle" data-theme-target="light" aria-label="切换浅色主题" title="浅色主题">
-              <span aria-hidden="true">◐</span>
-            </button>
+            <div class="theme-switch" role="group" aria-label="主题切换">
+              <button type="button" class="theme-toggle" data-theme-target="light" aria-label="切换到浅色主题" title="浅色主题">
+                <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4.1" fill="none" stroke="currentColor" stroke-width="1.7" />
+                  <path
+                    d="M12 2.7v2.1M12 19.2v2.1M4.6 12H2.5M21.5 12h-2.1M6.6 6.6 5.1 5.1M18.9 18.9l-1.5-1.5M17.4 6.6l1.5-1.5M5.1 18.9l1.5-1.5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                  />
+                </svg>
+              </button>
+              <button type="button" class="theme-toggle" data-theme-target="dark" aria-label="切换到深色主题" title="深色主题">
+                <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M20.6 14.3A8.7 8.7 0 0 1 9.7 3.4 8.7 8.7 0 1 0 20.6 14.3Z"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.7"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -92,15 +124,13 @@ const sideNav = [
         const root = document.documentElement;
         const STORAGE_KEY = "adhd-kb-theme";
 
-        const saved = localStorage.getItem(STORAGE_KEY);
-        const systemLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
-        const initial = saved || (systemLight ? "light" : "dark");
-        root.setAttribute("data-theme", initial);
-
+        // The initial attribute is set by the inline script in <head>.
         const syncButtons = () => {
           const current = root.getAttribute("data-theme") || "dark";
           document.querySelectorAll("[data-theme-target]").forEach((btn) => {
-            btn.classList.toggle("is-active", btn.getAttribute("data-theme-target") === current);
+            const isActive = btn.getAttribute("data-theme-target") === current;
+            btn.classList.toggle("is-active", isActive);
+            btn.setAttribute("aria-pressed", String(isActive));
           });
         };
 
@@ -108,7 +138,11 @@ const sideNav = [
           btn.addEventListener("click", () => {
             const target = btn.getAttribute("data-theme-target");
             root.setAttribute("data-theme", target);
-            localStorage.setItem(STORAGE_KEY, target);
+            try {
+              localStorage.setItem(STORAGE_KEY, target);
+            } catch {
+              /* storage unavailable — keep the in-page choice only */
+            }
             syncButtons();
           });
         });
