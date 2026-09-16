@@ -173,7 +173,7 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
 
     <script>
       const tocLinks = Array.from(document.querySelectorAll("[data-toc-link]"));
-      const observedHeadings = tocLinks
+      const headings = tocLinks
         .map((link) => {
           const id = link.getAttribute("href")?.replace("#", "");
           if (!id) return null;
@@ -184,30 +184,50 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
       const activateTocLink = (id) => {
         tocLinks.forEach((link) => {
           const target = link.getAttribute("href");
-          const isActive = target === `#${id}`;
-          link.classList.toggle("is-active", isActive);
+          link.classList.toggle("is-active", target === `#${id}`);
         });
       };
 
-      if (observedHeadings.length > 0) {
-        const io = new IntersectionObserver(
-          (entries) => {
-            const visible = entries
-              .filter((entry) => entry.isIntersecting)
-              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (headings.length > 0) {
+        let ticking = false;
 
-            if (visible.length > 0) {
-              activateTocLink(visible[0].target.id);
+        const updateActive = () => {
+          const triggerOffset = window.innerHeight * 0.28;
+          const scrollBottom = window.scrollY + window.innerHeight;
+          const docHeight = document.documentElement.scrollHeight;
+
+          // Near the bottom of the page — activate the last heading
+          if (scrollBottom >= docHeight - 60) {
+            activateTocLink(headings[headings.length - 1].id);
+            return;
+          }
+
+          // Find the last heading whose top has scrolled past the trigger line
+          let activeId = headings[0].id;
+          for (const heading of headings) {
+            const rect = heading.getBoundingClientRect();
+            if (rect.top + window.scrollY <= window.scrollY + triggerOffset) {
+              activeId = heading.id;
+            } else {
+              break;
             }
-          },
-          {
-            rootMargin: "-24% 0px -62% 0px",
-            threshold: [0.1, 0.6, 1],
-          },
-        );
+          }
+          activateTocLink(activeId);
+        };
 
-        observedHeadings.forEach((heading) => io.observe(heading));
-        activateTocLink(observedHeadings[0].id);
+        const onScroll = () => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              updateActive();
+              ticking = false;
+            });
+            ticking = true;
+          }
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onScroll, { passive: true });
+        updateActive();
       }
     </script>
   </BaseLayout>

@@ -384,6 +384,7 @@ a {
   border-radius: 0.9rem;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  scroll-margin-top: 6rem;
 }
 
 .article-prose h2 {
@@ -571,12 +572,19 @@ a {
   color: #adc2e5;
   border-radius: 0.5rem;
   padding: 0.3rem 0.46rem;
+  border-left: 2px solid transparent;
+  transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
 }
 
 .reading-toc-list a:hover,
 .reading-toc-list a.is-active {
   background: rgba(173, 140, 255, 0.2);
   color: #eff5ff;
+}
+
+.reading-toc-list a.is-active {
+  border-left-color: rgba(173, 140, 255, 0.85);
+  font-weight: 600;
 }
 
 .reading-toc-empty {
@@ -730,6 +738,25 @@ a {
     display: block;
     position: sticky;
     top: 6rem;
+    align-self: start;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+    padding-right: 0.15rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(155, 178, 222, 0.3) transparent;
+  }
+
+  .reading-sidecar::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .reading-sidecar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .reading-sidecar::-webkit-scrollbar-thumb {
+    background: rgba(155, 178, 222, 0.25);
+    border-radius: 999px;
   }
 
   .reading-article {
