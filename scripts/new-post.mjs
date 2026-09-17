@@ -8,7 +8,7 @@ if (!rawTitle) {
   console.error("用法: npm run new:post -- \"文章标题\" [track]");
   console.error("track 可选: understand | assessment | treatment | life");
   console.error("兼容旧参数: science | practice | belike");
-  console.error("可选参数: --minutes 8 --views 2.3k --tags \"沟通,关系\" --publish");
+  console.error("可选参数: --tags \"沟通,关系\" --publish");
   process.exit(1);
 }
 
@@ -18,20 +18,18 @@ const sectionToTrack = {
   belike: "life",
 };
 
-const trackToSection = {
-  understand: "science",
-  assessment: "practice",
-  treatment: "belike",
-  life: "belike",
+const trackLabel = {
+  understand: "认识 ADHD",
+  assessment: "评估与诊断",
+  treatment: "治疗",
+  life: "生活",
 };
 
-const valueOptions = new Set(["--minutes", "--views", "--tags"]);
+const valueOptions = new Set(["--tags"]);
 
 function parseFlags(inputArgs) {
   const flags = {
     publish: false,
-    minutes: null,
-    views: null,
     tags: [],
   };
 
@@ -53,19 +51,6 @@ function parseFlags(inputArgs) {
       process.exit(1);
     }
 
-    if (token === "--minutes") {
-      const parsed = Number.parseInt(value, 10);
-      if (!Number.isFinite(parsed) || parsed <= 0) {
-        console.error("--minutes 需要正整数，例如 --minutes 8");
-        process.exit(1);
-      }
-      flags.minutes = parsed;
-    }
-
-    if (token === "--views") {
-      flags.views = value;
-    }
-
     if (token === "--tags") {
       const parsedTags = value
         .split(",")
@@ -85,16 +70,11 @@ const optionArgs = args.slice(2);
 const flags = parseFlags(optionArgs);
 const normalized = typeof secondArg === "string" ? secondArg.toLowerCase() : "";
 
-const track = normalized in trackToSection
+const track = normalized in trackLabel
   ? normalized
   : (normalized in sectionToTrack ? sectionToTrack[normalized] : "understand");
 
-const section = trackToSection[track];
 const draft = flags.publish ? "false" : "true";
-const defaultReadMinutes = 8;
-const readMinutes = flags.minutes ?? defaultReadMinutes;
-const views = flags.views ?? "0";
-const escapedViews = String(views).replaceAll('"', '\\"');
 const tags = flags.tags.length > 0 ? flags.tags : ["待补充"];
 const tagsBlock = tags.map((tag) => `  - ${tag}`).join("\n");
 
@@ -116,21 +96,57 @@ const outDir = path.resolve("src/content/posts", folderName);
 const outPath = path.join(outDir, "index.mdx");
 const refsPath = path.join(outDir, "refs.bib");
 
+// 封面：frontmatter 里写相对路径，图片必须真实存在，否则 Astro 的 image() 会报错，
+// 所以这里顺手生成一张占位图，替换成自己的封面即可（文件名改了要同步改 frontmatter）。
+const coverRel = "./x.png";
+const coverPath = path.join(outDir, "x.png");
+
 if (fs.existsSync(outDir)) {
   console.error(`目录已存在: ${outDir}`);
   process.exit(1);
 }
 
+const coverSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1a2e"/>
+      <stop offset="1" stop-color="#16404f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.74" cy="0.26" r="0.62">
+      <stop offset="0" stop-color="#5a9ea5" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#5a9ea5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g fill="none" stroke="#8fc9c1" stroke-opacity="0.28" stroke-width="2">
+    <circle cx="980" cy="474" r="168"/>
+    <circle cx="980" cy="474" r="104"/>
+  </g>
+</svg>`;
+
+async function writePlaceholderCover() {
+  try {
+    const { default: sharp } = await import("sharp");
+    await sharp(Buffer.from(coverSvg)).png().toFile(coverPath);
+    return true;
+  } catch (error) {
+    console.error(`占位封面生成失败: ${error.message}`);
+    console.error("本次不写入 cover 字段；需要封面时放入图片再手动添加。");
+    return false;
+  }
+}
+
+fs.mkdirSync(outDir, { recursive: true });
+const coverCreated = await writePlaceholderCover();
+const coverBlock = coverCreated ? `cover: ${coverRel}\n` : "";
+
 const template = `---
 title: ${rawTitle}
 date: ${date}
-section: ${section}
 track: ${track}
 excerpt: 请在这里写一句摘要
-keyPoint: 请在这里写本文最重要的一句话
-readMinutes: ${readMinutes}
-views: "${escapedViews}"
-tags:
+${coverBlock}tags:
 ${tagsBlock}
 draft: ${draft}
 ---
@@ -138,14 +154,20 @@ draft: ${draft}
 在这里开始写正文。
 `;
 
-fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outPath, template, "utf8");
 fs.writeFileSync(refsPath, "", "utf8");
 console.log(`已创建: ${outPath}`);
+if (coverCreated) {
+  console.log(`已创建: ${coverPath}（占位封面，替换成自己的封面即可）`);
+}
 console.log(`已创建: ${refsPath} (可选论文文献)`);
-console.log(`栏目映射: track=${track} -> section=${section}`);
-console.log(`已写入: readMinutes=${readMinutes}, views=${views}, tags=${tags.join("/")}`);
-console.log("可选: 将 WebP 封面放在同目录 cover.webp，并在 frontmatter 增加 cover: ./cover.webp");
+console.log(`栏目: track=${track} -> ${trackLabel[track]}`);
+console.log(`标签: ${tags.join("/")}`);
+if (coverCreated) {
+  console.log(`封面: frontmatter 已写 cover: ${coverRel}；若改了图片文件名，请同步修改这一行`);
+} else {
+  console.log("封面: 未生成，需要时放入图片并在 frontmatter 添加 cover: ./文件名.png");
+}
 if (draft === "true") {
   console.log("下一步: 发布前将 draft 改为 false");
 }

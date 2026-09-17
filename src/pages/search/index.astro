@@ -1,7 +1,8 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { toShortSlug } from "../../lib/shortSlug";
+import { getTrackMeta, inferTrack } from "../../lib/taxonomy";
 
 const base = import.meta.env.BASE_URL;
 
@@ -14,18 +15,22 @@ const sectionLabelMap = {
   belike: "生活",
 } as const;
 
+// 新文章模板不再写 section，这里用 track 推出的栏目名兜底
+const resolveSectionLabel = (post: CollectionEntry<"posts">) =>
+  post.data.section ? sectionLabelMap[post.data.section] : getTrackMeta(inferTrack(post)).label;
+
 const postMetaMap = Object.fromEntries(
   posts.map((post) => {
     const shortSlug = toShortSlug(post.slug);
     const date = post.data.date.toISOString().slice(0, 10);
-    const section = sectionLabelMap[post.data.section];
+    const section = resolveSectionLabel(post);
     return [shortSlug, { date, section }];
   }),
 );
 
 const localSearchDataset = posts.map((post) => {
   const shortSlug = toShortSlug(post.slug);
-  const section = sectionLabelMap[post.data.section];
+  const section = resolveSectionLabel(post);
   return {
     title: post.data.title,
     excerpt: post.data.excerpt,

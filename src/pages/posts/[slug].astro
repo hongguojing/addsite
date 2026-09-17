@@ -106,7 +106,11 @@ const relatedPosts = (await getCollection("posts", ({ data }) => !data.draft))
           <Content />
         </div>
 
-        <p class="reading-post-lead">{post.data.excerpt}</p>
+        {
+          post.data.excerpt.trim() !== highlightText.trim() && (
+            <p class="reading-post-lead">{post.data.excerpt}</p>
+          )
+        }
 
         <div class="reading-keypoint">
           <p class="reading-keypoint-text">一句话结论：{highlightText}</p>
