@@ -581,11 +581,16 @@ body.toolbar-hidden .reading-sidecar {
 }
 
 .article-prose pre {
+  /* Flow chains are written as single horizontal lines, so let them wrap
+     instead of forcing a horizontal scrollbar on narrow screens. */
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   overflow-x: auto;
   border: 1px solid rgba(153, 178, 226, 0.22);
   border-radius: 0.72rem;
   background: rgba(9, 18, 35, 0.9);
   padding: 0.85rem;
+  line-height: 1.9;
 }
 
 /* --------------------------------------------------------
@@ -642,6 +647,16 @@ body.toolbar-hidden .reading-sidecar {
 .article-prose img {
   border-radius: 0.8rem;
   border: 1px solid rgba(153, 178, 226, 0.25);
+}
+
+/* Inline SVG diagrams inside articles: keep them fluid and on-theme.
+   `color: inherit` makes currentColor-based strokes/text follow the theme. */
+.article-prose svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 1.1rem 0;
+  color: inherit;
 }
 
 .reading-sidecar {
